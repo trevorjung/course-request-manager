@@ -1,0 +1,79 @@
+'use strict';
+
+const students = [
+  {
+    id: 'S001',
+    name: 'Alex Rivera',
+    grade: 9,
+    profile: 'Strong academic start. On track for standard 4-year pathway. No flags.',
+  },
+  {
+    id: 'S002',
+    name: 'Mei Chen',
+    grade: 9,
+    profile: 'English Language Learner, recently enrolled from China. Strong in math. Needs ELL English support course alongside core coursework.',
+  },
+  {
+    id: 'S003',
+    name: 'Jordan Williams',
+    grade: 10,
+    profile: 'Failed MTH101 (Algebra I) last year. Must retake before advancing in math. Otherwise on track. Counselor should flag math priority carefully.',
+  },
+  {
+    id: 'S004',
+    name: 'Priya Patel',
+    grade: 10,
+    profile: 'High achiever, targeting AP track. Has completed Algebra I and Geometry with honors. Wants to accelerate into Algebra II as a 10th grader.',
+  },
+  {
+    id: 'S005',
+    name: 'Marcus Thompson',
+    grade: 11,
+    profile: 'Average performer. Interested in arts and media. Meets all core requirements so far. Elective choices should reflect media interests.',
+  },
+  {
+    id: 'S006',
+    name: 'Sofia Mendez',
+    grade: 11,
+    profile: 'Strong across all subjects. Planning to take multiple APs. Counselor should confirm prerequisites are met and not overload schedule.',
+  },
+  {
+    id: 'S007',
+    name: 'Ethan Park',
+    grade: 11,
+    profile: 'Interested in science and medicine. Solid grades. Wants Anatomy & Physiology as a senior elective so should be tracked for SCI301 now.',
+  },
+  {
+    id: 'S008',
+    name: 'Aisha Johnson',
+    grade: 12,
+    profile: 'On track for graduation. Focused on completing requirements. Interested in Psychology and Economics as final electives.',
+  },
+  {
+    id: 'S009',
+    name: "Liam O'Brien",
+    grade: 12,
+    profile: 'Full AP load. College-bound, strong academic record. Counselor should review for schedule conflicts across AP courses.',
+  },
+  {
+    id: 'S010',
+    name: 'Nina Torres',
+    grade: 12,
+    profile: 'Transferred mid-junior year from another district. Credit evaluation pending. Some core credits may be missing — counselor must verify prior coursework before assigning requests.',
+  },
+];
+
+module.exports = {
+  async up(queryInterface) {
+    const now = new Date();
+    await queryInterface.bulkInsert(
+      'Students',
+      students.map((s) => ({ ...s, createdAt: now, updatedAt: now })),
+      { ignoreDuplicates: true }
+    );
+  },
+
+  async down(queryInterface) {
+    await queryInterface.bulkDelete('Students', null, {});
+  },
+};
