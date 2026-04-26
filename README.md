@@ -2,6 +2,8 @@
 
 A working prototype for school counselors and assistant principals to assign and edit student course requests for the upcoming school year. Landing page is a list of students, selecting a row opens a drawer where counselors can quickly add/edit a student's courses and student info. Navigating to the Course Catalog tab in the top right allows counselors to add/edit course catalog. There's also a new student button for adding new students
 
+<img width="1189" height="1074" alt="Screenshot 2026-04-26 at 1 13 56 PM" src="https://github.com/user-attachments/assets/40d9a8d9-bcdf-4ba9-9b6c-30522f974a2b" />
+
 ---
 
 ## Prerequisites
