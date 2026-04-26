@@ -13,21 +13,43 @@ const DEPT_COLORS = {
 
 const EMPTY_FORM = { code: '', name: '', department: 'Math', grades: '' };
 
+/** Returns an error string if grades is invalid, otherwise null. */
+function validateGrades(value) {
+  const trimmed = value.trim();
+  if (!trimmed) return 'Grades are required.';
+  const parts = trimmed.split('/');
+  if (parts.length > 2) return 'Use at most two grades separated by a slash, e.g. 11/12.';
+  for (const part of parts) {
+    const n = Number(part.trim());
+    if (!Number.isInteger(n) || n < 9 || n > 12) {
+      return `"${part.trim()}" is not a valid grade — must be 9, 10, 11, or 12.`;
+    }
+  }
+  if (parts.length === 2 && Number(parts[0]) >= Number(parts[1])) {
+    return 'When specifying a range, the lower grade must come first, e.g. 11/12.';
+  }
+  return null;
+}
+
 function CourseFormModal({ course, onSave, onClose }) {
   const isEdit = Boolean(course);
   const [form, setForm] = useState(
     course ? { code: course.code, name: course.name, department: course.department, grades: course.grades }
            : EMPTY_FORM
   );
+  const [gradesError, setGradesError] = useState(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
 
   function update(field, value) {
     setForm((f) => ({ ...f, [field]: value }));
+    if (field === 'grades') setGradesError(validateGrades(value));
   }
 
   async function handleSubmit(e) {
     e.preventDefault();
+    const gErr = validateGrades(form.grades);
+    if (gErr) { setGradesError(gErr); return; }
     setSaving(true);
     setError(null);
     try {
@@ -79,8 +101,18 @@ function CourseFormModal({ course, onSave, onClose }) {
                 placeholder="e.g. 9 or 11/12"
                 value={form.grades}
                 onChange={(e) => update('grades', e.target.value)}
-                className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                className={`w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:border-transparent ${
+                  gradesError
+                    ? 'border-red-400 focus:ring-red-400'
+                    : 'border-slate-300 focus:ring-indigo-500'
+                }`}
               />
+              {gradesError && (
+                <p className="mt-1 text-xs text-red-600">{gradesError}</p>
+              )}
+              {!gradesError && (
+                <p className="mt-1 text-xs text-slate-400">Single grade (9) or range (11/12)</p>
+              )}
             </div>
           </div>
 

@@ -1,23 +1,25 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getStudent, addRequest } from '../services/api';
+import { getStudent, addRequest, updateStudent } from '../services/api';
 import AddCourseModal from './AddCourseModal';
 import RequestSection from './RequestSection';
+import StudentProfileCard from './StudentProfileCard';
 
-const GRADE_COLORS = {
+const DRAWER_GRADE_COLORS = {
   9:  'bg-sky-100 text-sky-700',
   10: 'bg-violet-100 text-violet-700',
   11: 'bg-amber-100 text-amber-700',
   12: 'bg-emerald-100 text-emerald-700',
 };
 
-export default function StudentDrawer({ studentId, onClose, onCountChanged }) {
+export default function StudentDrawer({ studentId, onClose, onCountChanged, onActiveChanged }) {
   const navigate = useNavigate();
   const [visible, setVisible] = useState(false); // drives the slide-in animation
   const [student, setStudent] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showModal, setShowModal] = useState(false);
+  const [togglingActive, setTogglingActive] = useState(false);
 
   // Trigger slide-in on mount
   useEffect(() => {
@@ -65,6 +67,21 @@ export default function StudentDrawer({ studentId, onClose, onCountChanged }) {
     });
   }
 
+  async function handleToggleActive() {
+    if (!student) return;
+    const newActive = !student.active;
+    const label = newActive ? 'reactivate' : 'mark as inactive';
+    if (!confirm(`${newActive ? 'Reactivate' : 'Mark'} ${student.name} as ${newActive ? 'active' : 'inactive'}?`)) return;
+    setTogglingActive(true);
+    try {
+      await updateStudent(student.id, { active: newActive });
+      setStudent((prev) => ({ ...prev, active: newActive }));
+      onActiveChanged?.(student.id, newActive);
+    } finally {
+      setTogglingActive(false);
+    }
+  }
+
   async function handleAdd(courseCode, type, note) {
     await addRequest(studentId, courseCode, type, note);
     // Reload to get fully populated course details
@@ -94,7 +111,7 @@ export default function StudentDrawer({ studentId, onClose, onCountChanged }) {
           {student ? (
             <div className="flex items-center gap-2 min-w-0">
               <span className="font-semibold text-slate-900 truncate">{student.name}</span>
-              <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold shrink-0 ${GRADE_COLORS[student.grade] || 'bg-slate-100 text-slate-600'}`}>
+              <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold shrink-0 ${DRAWER_GRADE_COLORS[student.grade] || 'bg-slate-100 text-slate-600'}`}>
                 Grade {student.grade}
               </span>
             </div>
@@ -138,24 +155,23 @@ export default function StudentDrawer({ studentId, onClose, onCountChanged }) {
             </div>
           )}
 
+          {!loading && student && !student.active && (
+            <div className="mx-6 mt-4 flex items-center gap-2 bg-slate-100 border border-slate-300 text-slate-600 text-xs font-medium px-3 py-2 rounded-lg">
+              <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+              </svg>
+              This student is inactive and will not appear in the active roster.
+            </div>
+          )}
+
           {!loading && student && (
             <div className="p-6 space-y-5">
               {/* Profile card */}
-              <div className="bg-slate-50 rounded-xl border border-slate-200 p-4">
-                <div className="flex items-center gap-3 mb-2">
-                  <div className="flex items-center gap-2 text-sm shrink-0">
-                    <div className="text-center px-3 py-1.5 bg-rose-50 rounded-lg border border-rose-100">
-                      <div className="text-lg font-bold text-rose-600 leading-none">{priorityRequests.length}</div>
-                      <div className="text-xs text-rose-500 font-medium mt-0.5">Priority</div>
-                    </div>
-                    <div className="text-center px-3 py-1.5 bg-indigo-50 rounded-lg border border-indigo-100">
-                      <div className="text-lg font-bold text-indigo-600 leading-none">{electiveRequests.length}</div>
-                      <div className="text-xs text-indigo-500 font-medium mt-0.5">Elective</div>
-                    </div>
-                  </div>
-                  <p className="text-xs text-slate-500 leading-relaxed">{student.profile || <span className="italic">No counselor notes</span>}</p>
-                </div>
-              </div>
+              <StudentProfileCard
+                student={student}
+                compact
+                onUpdated={(patch) => setStudent((prev) => ({ ...prev, ...patch }))}
+              />
 
               {/* Add course button */}
               <div className="flex items-center justify-between">
@@ -190,6 +206,25 @@ export default function StudentDrawer({ studentId, onClose, onCountChanged }) {
                 onDelete={handleDelete}
                 accentClass="bg-indigo-50 text-indigo-800"
               />
+
+              {/* Deactivate / reactivate */}
+              <div className="pt-2 border-t border-slate-200">
+                <button
+                  onClick={handleToggleActive}
+                  disabled={togglingActive}
+                  className={`w-full py-2 rounded-lg text-sm font-medium border transition-colors disabled:opacity-50 ${
+                    student.active
+                      ? 'border-red-200 text-red-600 hover:bg-red-50'
+                      : 'border-green-200 text-green-700 hover:bg-green-50'
+                  }`}
+                >
+                  {togglingActive
+                    ? '…'
+                    : student.active
+                      ? 'Mark student as inactive'
+                      : 'Reactivate student'}
+                </button>
+              </div>
             </div>
           )}
         </div>

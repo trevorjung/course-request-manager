@@ -29,6 +29,21 @@ router.post('/', async (req, res) => {
   }
 });
 
+router.patch('/:id', async (req, res) => {
+  try {
+    const { name, grade, profile } = req.body;
+    const patch = {};
+    if (name !== undefined) patch.name = name;
+    if (grade !== undefined) patch.grade = parseInt(grade, 10);
+    if (profile !== undefined) patch.profile = profile;
+    const student = await dataService.updateStudent(req.params.id, patch);
+    res.json(student);
+  } catch (err) {
+    if (err.message === 'Student not found') return res.status(404).json({ error: err.message });
+    res.status(500).json({ error: err.message });
+  }
+});
+
 router.get('/:id', async (req, res) => {
   try {
     const student = await dataService.getStudent(req.params.id);

@@ -4,7 +4,7 @@ const { Student, Course, CourseRequest, sequelize } = require('../models');
 
 async function getStudents() {
   return Student.findAll({
-    attributes: ['id', 'name', 'grade', 'profile'],
+    attributes: ['id', 'name', 'grade', 'profile', 'active'],
     include: [
       {
         model: CourseRequest,
@@ -12,7 +12,8 @@ async function getStudents() {
         attributes: ['id'],
       },
     ],
-    order: [['grade', 'ASC'], ['name', 'ASC']],
+    // Active students first, then inactive; within each group sort by grade then name
+    order: [['active', 'DESC'], ['grade', 'ASC'], ['name', 'ASC']],
   });
 }
 
@@ -34,6 +35,12 @@ async function createStudent({ name, grade, profile }) {
   const count = await Student.count();
   const id = `S${String(count + 1).padStart(3, '0')}`;
   return Student.create({ id, name, grade: parseInt(grade, 10), profile: profile || '' });
+}
+
+async function updateStudent(id, patch) {
+  const student = await Student.findByPk(id);
+  if (!student) throw new Error('Student not found');
+  return student.update(patch);
 }
 
 async function getCourses() {
@@ -76,6 +83,7 @@ module.exports = {
   getStudents,
   getStudent,
   createStudent,
+  updateStudent,
   getCourses,
   createCourse,
   updateCourse,

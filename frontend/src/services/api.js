@@ -19,6 +19,8 @@ export const getStudents = () => request('/students');
 export const getStudent = (id) => request(`/students/${id}`);
 export const createStudent = (data) =>
   request('/students', { method: 'POST', body: data });
+export const updateStudent = (id, patch) =>
+  request(`/students/${id}`, { method: 'PATCH', body: patch });
 
 // Courses
 export const getCourses = () => request('/courses');

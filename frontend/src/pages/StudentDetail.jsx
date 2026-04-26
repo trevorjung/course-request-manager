@@ -3,13 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { getStudent, addRequest } from '../services/api';
 import AddCourseModal from '../components/AddCourseModal';
 import RequestSection from '../components/RequestSection';
-
-const GRADE_COLORS = {
-  9:  'bg-sky-100 text-sky-700',
-  10: 'bg-violet-100 text-violet-700',
-  11: 'bg-amber-100 text-amber-700',
-  12: 'bg-emerald-100 text-emerald-700',
-};
+import StudentProfileCard from '../components/StudentProfileCard';
 
 export default function StudentDetail() {
   const { id } = useParams();
@@ -81,29 +75,11 @@ export default function StudentDetail() {
         All Students
       </button>
 
-      <div className="bg-white rounded-xl border border-slate-200 p-6 mb-6 shadow-sm">
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <div className="flex items-center gap-3 mb-2">
-              <h2 className="text-2xl font-bold text-slate-900">{student.name}</h2>
-              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold ${GRADE_COLORS[student.grade] || 'bg-slate-100 text-slate-600'}`}>
-                Grade {student.grade}
-              </span>
-              <span className="text-xs text-slate-400 font-mono">{student.id}</span>
-            </div>
-            <p className="text-slate-600 text-sm max-w-2xl leading-relaxed">{student.profile}</p>
-          </div>
-          <div className="flex items-center gap-2 text-sm shrink-0">
-            <div className="text-center px-4 py-2 bg-rose-50 rounded-lg border border-rose-100">
-              <div className="text-xl font-bold text-rose-600">{priorityRequests.length}</div>
-              <div className="text-xs text-rose-500 font-medium">Priority</div>
-            </div>
-            <div className="text-center px-4 py-2 bg-indigo-50 rounded-lg border border-indigo-100">
-              <div className="text-xl font-bold text-indigo-600">{electiveRequests.length}</div>
-              <div className="text-xs text-indigo-500 font-medium">Elective</div>
-            </div>
-          </div>
-        </div>
+      <div className="mb-6">
+        <StudentProfileCard
+          student={student}
+          onUpdated={(patch) => setStudent((prev) => ({ ...prev, ...patch }))}
+        />
       </div>
 
       <div className="flex items-center justify-between mb-4">
