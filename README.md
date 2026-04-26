@@ -51,6 +51,8 @@ Open **http://localhost:5173** in your browser.
 
 https://docs.google.com/document/d/1UaA5dnS_P4HUZAUEYkvzFTz34aSPzefqwuFa11BYeTY/edit?tab=t.0
 
+---
+
 ## Architecture
 
 ### Project Structure
@@ -97,14 +99,6 @@ A `UNIQUE(studentId, courseCode)` constraint on `CourseRequests` prevents a stud
 
 **Frontend API service layer**
 `frontend/src/services/api.js` contains every `fetch` call in one place. Swapping to a real API (different base URL, auth headers, etc.) is a single-file change. Vite's dev proxy handles the `/api` path so the frontend never hardcodes `localhost:3001`.
-
-**Testing strategy (not implemented, but planned)**
-- *Unit tests*: `sequelizeDataService.js` functions using a test database or mocking Sequelize models with `sinon`/`jest.mock`.
-- *Integration tests*: Supertest against the Express app with a dedicated test DB seeded before each suite.
-- *Frontend*: React Testing Library for component behavior (add course modal interactions, request toggle, error states). No snapshot tests — they're brittle and don't test behavior.
-
-**Scaling trade-offs**
-For a pilot with one school (~300–500 students), this architecture is appropriate. At scale (multi-school district, concurrent counselors), the main pressure points would be: database connection pooling (Sequelize supports this), optimistic UI updates instead of full reloads after `addRequest`, and adding pagination to the student list endpoint.
 
 ---
 
