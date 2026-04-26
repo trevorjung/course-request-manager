@@ -1,6 +1,6 @@
 # Course Request Manager
 
-A working prototype for school counselors and assistant principals to assign and edit student course requests for the upcoming school year.
+A working prototype for school counselors and assistant principals to assign and edit student course requests for the upcoming school year. Landing page is a list of students, selecting a row opens a drawer where counselors can quickly add/edit a student's courses and student info. Navigating to the Course Catalog tab in the top right allows counselors to add/edit course catalog. There's also a new student button for adding new students
 
 ---
 
@@ -15,8 +15,10 @@ A working prototype for school counselors and assistant principals to assign and
 
 ```bash
 # 1. Clone the repo
-git clone <repo-url>
+git clone https://github.com/trevorjung/course-request-manager
 cd course-request-manager
+
+# Ensure DOCKER DESKTOP and NODE are installed (see prerequisites portion above)
 
 # 2. First-time setup (installs deps, starts Postgres, runs migrations + seed)
 npm run setup
