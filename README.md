@@ -47,6 +47,10 @@ Open **http://localhost:5173** in your browser.
 
 ---
 
+## Written Extensions
+
+https://docs.google.com/document/d/1UaA5dnS_P4HUZAUEYkvzFTz34aSPzefqwuFa11BYeTY/edit?tab=t.0
+
 ## Architecture
 
 ### Project Structure
@@ -117,28 +121,3 @@ For a pilot with one school (~300–500 students), this architecture is appropri
 
 ---
 
-## Written Extensions
-
-### 1. Co-requisite Courses
-
-Co-requisites would be modeled as a many-to-many self-referencing relationship on the `Courses` table — a `CourseCoRequisites` join table with `courseCode` and `coReqCode` columns (with a `UNIQUE` constraint on the ordered pair to avoid duplicates). This keeps the catalog data self-contained and allows a course to have multiple co-requisites.
-
-In the UI, the most useful touchpoint is at assignment time: when a counselor selects a course that has co-requisites, the Add Course modal would surface a warning — "This course requires Biology (SCI101) to be taken in the same year. Would you like to add both?" — with a one-click option to add both simultaneously. A secondary safeguard would be a visual indicator on the student's request list when a co-requisite is present in the catalog but missing from the student's requests, similar to how a linter underlines a problem without blocking you.
-
-Key questions I'd want to answer before building: Are co-requisites enforced (block save) or advisory (warn but allow)? Can a co-requisite relationship be directional (A requires B, but B doesn't require A)? Who can modify co-requisite relationships — is that a counselor concern or an admin/registrar concern?
-
-### 2. Integration with an External Scheduling Platform
-
-I'd expose a read-only REST endpoint (`GET /api/export/requests`) that returns the current state of all finalized course requests in a normalized JSON format the scheduling platform can consume. Access would be gated behind an API key (passed as a bearer token), stored as an environment variable on the server — no student-facing auth is needed since this is an internal staff tool.
-
-The harder problem is change management after sharing. The scheduling platform needs to know when requests change post-export. I'd address this with two mechanisms: a `lastExportedAt` timestamp on each `CourseRequest` row, so the export endpoint can return a diff since the last pull; and optionally a webhook endpoint the scheduling platform can register to receive push notifications when requests are created, updated, or deleted. The webhook payload would include the student ID, course code, change type, and a timestamp. For security, payloads would be signed with an HMAC-SHA256 signature using a shared secret, so the receiving platform can verify authenticity.
-
-Key questions: Does the scheduling platform pull or do we push? Is there a defined "freeze date" after which requests are locked and changes require an explicit override? Should deleted requests hard-delete or soft-delete (tombstone), so the scheduler knows to remove them rather than treating them as missing data?
-
-### 3. Changing Student Population
-
-Transfers in are straightforward to handle at the data level — the student record is created with no requests, and the counselor is responsible for filling them in. The UX challenge is surfacing these students before they get lost. I'd add a `enrolledAt` timestamp to the `Students` table and a `status` field (`active`, `transferred_out`). The student list would then support a "Needs Attention" filter that surfaces: (a) students enrolled in the last 30 days with zero requests, and (b) students whose enrollment status recently changed.
-
-For transfers out, I'd soft-delete rather than hard-delete: set `status = 'transferred_out'` and hide them from the default view, but retain their request history. This preserves data for any downstream systems (the scheduling platform, audit logs) that may have already received their requests. A counselor could filter to see transferred students and explicitly archive or reassign their requests as needed.
-
-Key questions: Is student data managed here or synced from an external SIS (Student Information System)? If it's a sync, we need a reconciliation job that detects new/departing students and updates status accordingly. How quickly does a counselor need to act on a new transfer — is a daily digest sufficient, or does it need to be a real-time alert?
